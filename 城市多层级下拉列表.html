@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择你所在的城市</title>
+</head>
+<style>
+    [v-cloak]{
+        display: none;
+    }
+</style>
+<body>
+<div id="app">
+    <select name="province"  @change="proChange()" v-model="pro">
+        <option value="">请选择你所在的省份</option>
+        <option v-for="item in provinces" v-bind:value="item" v-cloak>{{item}}</option>
+    </select>
+    <select name="city" @change="cityChange()" v-model="cit">
+        <option value="">请选择你所在的市区</option>
+        <option v-for="item in cities" v-bind:value="item" v-cloak>{{item}}</option>
+    </select>
+    <select name="county">
+        <option value="">请选择你所在的城区</option>
+        <option v-for="item in counties" value="item" v-cloak>{{item}}</option>
+    </select>
+</div>
+<script src="vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    const app = new Vue({
+        el:'#app',
+        data:{
+            results:'',
+            pro:'',
+            cit:'',
+            provinces:[],
+            cities:[],
+            counties:[],
+            index:0,
+            second:0
+        },
+        created() {
+            axios.get('./province.json').then(response => {
+                this.results = response.data;
+                for(let i in this.results){
+                    this.provinces.push(this.results[i].name);;
+                }
+            });
+
+        },
+        methods:{
+            proChange(){
+                this.cities = [];
+                this.counties = [];
+                this.index = this.provinces.findIndex((value)=>value == this.pro);
+                if(this.index>=0){
+                    for(let i in this.results[this.index].city){
+                        this.cities.push(this.results[this.index].city[i].name);
+                    }
+                }else{
+                    this.cities = [];
+                    this.counties = [];
+                }
+                setTimeout(function (){
+                    document.getElementsByName('city')[0].options[0].selected = true;
+                },0)
+
+            },
+            cityChange(){
+                this.counties = [];
+                this.second = this.cities.findIndex((value)=>value == this.cit);
+                if(this.second>=0){
+                    for(let i in this.results[this.index].city[this.second].area){
+                        this.counties.push(this.results[this.index].city[this.second].area[i].name);
+                    }
+                }else{
+                    this.counties = [];
+                }
+                setTimeout(function (){
+                    document.getElementsByName('county')[0].options[0].selected = true;
+                },0)
+            }
+        }
+    })
+</script>
+</body>
+</html>
